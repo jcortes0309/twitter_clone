@@ -1,9 +1,31 @@
 // Will be the front end (somehow)
 
-var app = angular.module("twitter_clone", ["ui.router"]);
+var app = angular.module("twitter_clone", ["ui.router", "ngCookies"]);
 
-app.factory("twitterFactory", function($http, $rootScope) {
+app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   var service = {};
+  $rootScope.authToken = null;
+  console.log("Printing initial cookie", $rootScope.authToken);
+  // cookie data gets passed into the factory
+  $rootScope.authToken = $cookies.getObject('cookieData');
+  console.log("Printing initial cookie", $rootScope.authToken);
+
+  console.log("I am inside the factory!");
+  if ($rootScope.authToken) {
+    console.log("I am a cookie data in the factory!");
+    // grab auth_token from the cookieData
+    $rootScope.authToken = $rootScope.authToken;
+  }
+
+  $rootScope.logout = function() {
+    console.log("Entered the logout function");
+    // remove method => pass in the value of the cookie data you want to remove
+    $cookies.remove('cookieData');
+    // reset all the scope variables
+    $rootScope.authToken = null;
+    console.log("Here is the $rootScope.authToken: ", $rootScope.authToken);
+    $state.go("world");
+  };
 
   service.profile = function() {
     return $http ({
@@ -36,6 +58,17 @@ app.factory("twitterFactory", function($http, $rootScope) {
       data: data
     });
   };
+  service.login = function(data) {
+    console.log("in login service", data);
+    return $http ({
+      method: 'POST',
+      url: "/login",
+      data: data
+    });
+  };
+
+
+
   return service;
 });
 
@@ -78,7 +111,7 @@ app.controller("WorldController", function($scope, twitterFactory) {
   });
 });
 
-app.controller("SignupController", function($scope, twitterFactory) {
+app.controller("SignupController", function($scope, twitterFactory, $state) {
   console.log("in signup");
 
   $scope.signup = function() {
@@ -90,6 +123,42 @@ app.controller("SignupController", function($scope, twitterFactory) {
     };
     console.log("$scope.signup_data is ", $scope.signup_data);
     twitterFactory.signup($scope.signup_data);
+    $state.go('login');
+    // .then(function() {
+    //   $state.go('login');
+    // })
+    // .catch(function(err) {
+    //   console.log('err because', err.stack);
+    // });
+
+  };
+});
+app.controller("LoginController", function($scope, twitterFactory, $cookies, $state, $rootScope) {
+  console.log("in login");
+
+  $scope.login = function() {
+    console.log('in login function');
+    $scope.login_data = {
+      username: $scope.username,
+      password: $scope.password
+    };
+    console.log("$scope.login_data is ", $scope.login_data);
+    twitterFactory.login($scope.login_data)
+      .then(function(response) {
+        console.log("This response is coming from the backend: ", response.data.auth_token);
+        console.log("This is the response info: ", response);
+        var auth_token = response.data.auth_token;
+
+        console.log("I put the dough in the cookie....");
+        $cookies.putObject('cookieData', auth_token);
+        $rootScope.authToken = auth_token;
+        console.log("Here is my $rootScope.authToken", $rootScope.authToken);
+        $state.go("home");
+
+      })
+      .catch(function(error) {
+        console.log("There was an error: ", error.stack);
+      });
   };
 });
 
@@ -118,6 +187,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
     url: "/signup",
     templateUrl: "signup.html",
     controller: "SignupController"
+  })
+  .state({
+    name: "login",
+    url: "/login",
+    templateUrl: "login.html",
+    controller: "LoginController"
   });
 
   $urlRouterProvider.otherwise("/");

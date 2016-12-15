@@ -4,8 +4,9 @@ const mongoose = require("mongoose");
 const bluebird = require("bluebird");
 const _ = require("lodash");
 const bodyParser = require("body-parser");
-const uuid = require("uuid");
-const bcrypt = require("bcrypt");
+// Generate a v4 UUID (random)
+const uuidV4 = require('uuid/v4');
+const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const myPlaintextPassword = 's0/\/\P4$$w0rD';
 const someOtherPlaintextPassword = 'not_bacon';
@@ -22,6 +23,7 @@ const User = mongoose.model('User', {
   _id: String, // actually the username
   name: String,
   password: String,
+  auth_token: String,
   avatar_url: String,
   following: [String]
   // followers: [ObjectId]  // do not need it for now
@@ -112,7 +114,7 @@ var firstTweet = new Tweet( {
 app.get("/profile", function(request, response) {
   console.log("I'm in the backend");
 
-  bluebird.all([
+  return bluebird.all([
     Tweet.find({ userID: 'Hulkster' }).limit(20),
     User.findById('Hulkster')
   ])
@@ -287,7 +289,6 @@ app.post('/signup', function(request, response) {
         })
         .catch(function(error) {
           console.log("Didn't save because: ", error.stack);
-          // console.log("Detailed information : ", error.errors);
         });
     })
     .catch(function(error) {
@@ -295,7 +296,54 @@ app.post('/signup', function(request, response) {
      });
 });
 
+app.post('/login', function(request, response) {
+  console.log("This is the request: ", request.body);
+  var username = request.body['username'];
+  var verify_password = request.body['password'];
+  console.log("Username: ", username);
+  console.log("verify_password: ", verify_password);
 
+  User.findById(username)
+    .then(function(user) {
+      console.log("User returned from the database: ", user);
+      let hash = user.password;
+      console.log("This is the password/hash", hash);
+      // Load hash from your password DB.
+      bcrypt.compare(verify_password, hash)
+        .then(function(response) {
+          if (response) {
+            console.log("You are allowed to enter because response is: ", response);
+            var auth_token = uuidV4();
+            console.log("This is my special token.  Don't touch: ", auth_token);
+            return bluebird.all([
+              auth_token,
+              User.update(
+                { _id: username },
+                {
+                  $set: {
+                    auth_token: auth_token
+                  }
+                }
+              )
+            ]);
+          } else {
+            throw new Error("You are NOT allowed to enter");
+          }
+        })
+        .then(function(stuff) {
+          let auth_token = stuff[0];
+          console.log("success @!!@");
+          console.log("Here is the user's token!", auth_token);
+          response.json({
+            auth_token: auth_token
+          });
+        })
+        .catch(function(error) {
+          console.log("You have an error: ", error.stack);
+        })
+        ;
+    });
+});
 
 
 
