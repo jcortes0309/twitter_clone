@@ -33,12 +33,12 @@ var firstTweet = new Tweet( {
 //   date: new Date(),
 //   userID: "IAmAnything"
 // });
-// var hulkTweet = new Tweet( {
-//   text: "this is the hulksters tweet",
+// var hulkTweet2 = new Tweet( {
+//   text: "this is the hulksters second tweet",
 //   date: new Date(),
 //   userID: "Hulkster"
 // });
-// hulkTweet.save()
+// hulkTweet2.save()
 //   .then(function(blah) {
 //     console.log('hulk tweet success', blah);
 //   })
@@ -127,6 +127,100 @@ app.get("/profile", function(request, response) {
 
 
 });
+
+
+app.get("/my_timeline", function(request, response) {
+
+  var userId = 'Hulkster';
+
+  User.findOne({ _id: userId})
+    .then(function(userInfo) {
+      console.log('USER INFO::', userInfo);
+      return [userInfo, Tweet.find({
+        userID: {
+          $in: userInfo.following.concat([userId])
+        }
+      })];
+    })
+    .then(function(tweets) {
+      console.log("\n\nHere are the tweets\n\n", tweets);
+      response.json({
+        info: tweets[0]
+      });
+
+    })
+    .catch(function(err) {
+      console.log('encountered err retrieving user profile::', err.message);
+    });
+  // User.findById("Hulkster");
+  // bluebird.all([
+  //   Tweet.find({ userID: 'Hulkster' }).limit(20),
+  //   User.findById('Hulkster')
+  // ])
+  // .spread(function(tweets, user) {
+  //   var timelineInfo = {
+  //     tweets: tweets,
+  //     user: user
+  //   };
+  //   response.json({
+  //     timelineInfo: timelineInfo
+  //   });
+  // })
+  // .catch(function(error) {
+  //   response.status(400);
+  //   response.json({
+  //     message: "It didn't work!",
+  //   });
+  //   console.log("We got an error! ", error.stack);
+  // });
+
+
+  // User.findById("Hulkster", function(error, user) {
+  //     console.log("\nUser's info", user);
+  //     Tweet.find({ userID: { $in: user.following.concat([user._id]) }}, function(error,tweets){
+  //         console.log("Tweets",tweets);
+  //         var followers = {};
+  //         for(let i = 0; i < tweets.length; i++){
+  //           followers[tweets[i]] = tweets[i];
+  //         }
+  //         console.log("Followers user info",followers)
+  //     });
+  // });
+
+
+
+
+  // My timeline
+  // User.findById("Hulkster")
+  //   .then(function(user) {
+  //     console.log("\nUser's info", user);
+  //       Tweet.find({
+  //         userID: {
+  //           $in: user.following.concat([user._id])
+  //         }
+  //       });
+  //   })
+  //   .then(function(tweets) {
+  //     // you have the tweets
+  //     console.log("Here are the tweets: \n", tweets);
+  //     response.json({
+  //       all_tweets: tweets
+  //     });
+  //   });
+  //
+
+
+
+
+
+
+  // console.log("myTimeline controller backend", request);
+  // response.json({
+  //   message: "timeline backend message"
+  // });
+});
+
+
 // bluebird.all([
 //   Tweet.find({ userID: 'Hulkster' }).limit(20),
 //   User.findById('Hulkster')

@@ -1,4 +1,8 @@
 <h1>Hello from the profile.html page</h1>
 
-<!-- <h2>{{profile_info}}</h2> -->
-<h2>{{info.data.profile_page.user._id}}</h2>
+<h2>{{ profile._id }}</h2>
+<img src="{{ profile.avatar_url }}" alt="">
+<hr>
+<div class="">
+  <p ng-repeat="tweet in tweets">{{ tweet.text }}</p>
+</div>
