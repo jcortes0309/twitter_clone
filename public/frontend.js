@@ -27,6 +27,15 @@ app.factory("twitterFactory", function($http, $rootScope) {
       url: "/world"
     });
   };
+
+  service.signup = function(data) {
+    console.log("in signup service", data);
+    return $http ({
+      method: 'POST',
+      url: "/signup",
+      data: data
+    });
+  };
   return service;
 });
 
@@ -69,6 +78,21 @@ app.controller("WorldController", function($scope, twitterFactory) {
   });
 });
 
+app.controller("SignupController", function($scope, twitterFactory) {
+  console.log("in signup");
+
+  $scope.signup = function() {
+    console.log('in signupfunction');
+    $scope.signup_data = {
+      name: $scope.name,
+      username: $scope.username,
+      password: $scope.password
+    };
+    console.log("$scope.signup_data is ", $scope.signup_data);
+    twitterFactory.signup($scope.signup_data);
+  };
+});
+
 app.config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
   .state({
@@ -88,6 +112,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
     url: "/world",
     templateUrl: "world.html",
     controller: "WorldController"
+  })
+  .state({
+    name: "signup",
+    url: "/signup",
+    templateUrl: "signup.html",
+    controller: "SignupController"
   });
 
   $urlRouterProvider.otherwise("/");

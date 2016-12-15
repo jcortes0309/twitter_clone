@@ -3,17 +3,27 @@ const app = express();
 const mongoose = require("mongoose");
 const bluebird = require("bluebird");
 const _ = require("lodash");
+const bodyParser = require("body-parser");
+const uuid = require("uuid");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+const myPlaintextPassword = 's0/\/\P4$$w0rD';
+const someOtherPlaintextPassword = 'not_bacon';
+
 mongoose.Promise = bluebird;
 
 mongoose.connect("mongodb://localhost/twitter_clone");
+mongoose.set("debug", true);
 
 app.use(express.static("public"));
+app.use(bodyParser.json());
 
 const User = mongoose.model('User', {
   _id: String, // actually the username
   name: String,
+  password: String,
   avatar_url: String,
-  following: [String],
+  following: [String]
   // followers: [ObjectId]  // do not need it for now
 });
 
@@ -133,41 +143,50 @@ app.get("/profile", function(request, response) {
 
 
 app.get("/my_timeline", function(request, response) {
-  console.log("I'm at the beginning of the /my_timeline backend");
   // My timeline
+  // Finds a specific user and returns a promise
   User.findById("Hulkster")
     .then(function(user) {
-      console.log("\nUser's info\n", user);
+      // console.log("\nUser's info\n", user);
+      // Looks at all the tweets and will return the tweets for everyone the user is following, including his/her tweets
       return Tweet.find({
         userID: {
           $in: user.following.concat([user._id])
         }
       });
     })
+    // Receives all the tweets previously returned
     .then(function(tweets) {
       // console.log("User info: ", user);
+      // Creates an array that will hold the userIDs of everyone the user is following (based on the information found in the tweets)
       var following = [];
       tweets.forEach(function(tweet) {
         // console.log("\n\nTweet inside tweets: \n", tweet);
         following.push(tweet.userID);
       });
+      // Removes duplicate values from the following array
       following = _.uniqBy(following);
       console.log("\nI'm following: ", following);
       console.log("\n\n");
-      // Using bluebird.map:
-      bluebird.map(following, function(user) {
-        // bluebird.map awaits for returned promises as well.
-        // change to $in... LATER!!!
-        return User.findById(user);
+      // Gets the user information only for the users found in the following array
+      return User.find({
+        _id: {
+          $in: following
+        }
       })
+      // Receives the information for all the users previously returned (only the ones the user is following)
       .then(function(following_users) {
+        // Creates an indexed object
         var indexed_following_users = {};
-        _.forEach(following_users, function(user) {
+        // Loops through every user that was previously returned (inside following_users) and creates a new object with the key value equal to the information found in user._id (the user's id inside mongodb)
+        following_users.forEach(function(user) {
           indexed_following_users[user._id] = user;
           // console.log("\n\nindexed_following_users information: \n\n", indexed_following_users);
         });
+        // Loops through every tweet
         tweets.forEach(function(tweet) {
           // console.log("\n\nHERE IS MY TWEET\n\n", tweet);
+          // Creates a variable called user and assigns the user whose key value (from the indexed_following_users object) equals tweet.UserID
           let user = indexed_following_users[tweet.userID];
           // console.log(user);
           tweet.name = user.name;
@@ -189,77 +208,7 @@ app.get("/my_timeline", function(request, response) {
         });
         console.log("We got an error! ", error.stack);
       });
-
-
-    })
-    // .then(function(info) {
-    //   console.log("\n\nInformation: ", info);
-    // })
-    ;
-
-  // var userId = 'Hulkster';
-  //
-  // User.findOne({ _id: userId})
-  //   .then(function(userInfo) {
-  //     console.log('USER INFO::', userInfo);
-  //     return [userInfo, Tweet.find({
-  //       userID: {
-  //         $in: userInfo.following.concat([userId])
-  //       }
-  //     })];
-  //   })
-  //   .then(function(tweets) {
-  //     console.log("\n\nHere are the tweets\n\n", tweets);
-  //     response.json({
-  //       info: tweets[0]
-  //     });
-  //
-  //   })
-  //   .catch(function(err) {
-  //     console.log('encountered err retrieving user profile::', err.message);
-  //   });
-
-  // User.findById("Hulkster");
-  // bluebird.all([
-  //   Tweet.find({ userID: 'Hulkster' }).limit(20),
-  //   User.findById('Hulkster')
-  // ])
-  // .spread(function(tweets, user) {
-  //   var timelineInfo = {
-  //     tweets: tweets,
-  //     user: user
-  //   };
-  //   response.json({
-  //     timelineInfo: timelineInfo
-  //   });
-  // })
-  // .catch(function(error) {
-  //   response.status(400);
-  //   response.json({
-  //     message: "It didn't work!",
-  //   });
-  //   console.log("We got an error! ", error.stack);
-  // });
-
-
-  // User.findById("Hulkster", function(error, user) {
-  //     console.log("\nUser's info", user);
-  //     Tweet.find({ userID: { $in: user.following.concat([user._id]) }}, function(error,tweets){
-  //         console.log("Tweets",tweets);
-  //         var followers = {};
-  //         for(let i = 0; i < tweets.length; i++){
-  //           followers[tweets[i]] = tweets[i];
-  //         }
-  //         console.log("Followers user info",followers)
-  //     });
-  // });
-
-
-
-  // console.log("myTimeline controller backend", request);
-  // response.json({
-  //   message: "timeline backend message"
-  // });
+    });
 });
 
 app.get("/world", function(request, response) {
@@ -315,6 +264,36 @@ app.get("/world", function(request, response) {
     });
 });
 
+app.post('/signup', function(request, response) {
+  console.log("This is the request: ", request.body);
+  var name = request.body['name'];
+  var username = request.body['username'];
+  var password = request.body['password'];
+
+  bcrypt.hash(password, saltRounds)
+    .then(function(hash) {
+      console.log("This is the hash: ", hash);
+      var newSignup = new User({
+        name: name,
+        _id: username,
+        password: hash
+      });
+
+      console.log("This is the newSignup info: ", newSignup);
+
+      newSignup.save()
+        .then(function(result) {
+          console.log("Save success", result);
+        })
+        .catch(function(error) {
+          console.log("Didn't save because: ", error.stack);
+          // console.log("Detailed information : ", error.errors);
+        });
+    })
+    .catch(function(error) {
+      console.log("Didn't save because: ", error.stack);
+     });
+});
 
 
 
