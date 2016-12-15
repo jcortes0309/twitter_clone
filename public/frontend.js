@@ -42,18 +42,21 @@ app.controller("MyTimelineController", function($scope, twitterFactory) {
   twitterFactory.myTimeline()
   .then(function(info) {
     console.log("mytimeline info", info);
-    console.log("mytimeline tweets", info.data.info.following.name);
-    console.log("mytimeline avatar", info.data.info.avatar_url);
+    // $scope.timeline_info = info.data.timelineInfo;
+    // $scope.user = info.data.timelineInfo.user;
+    $scope.tweets = info.data.my_timeline_info.my_timeline_tweets;
+    $scope.following = info.data.my_timeline_info.following_users;
 
-    $scope.timeline_info = info.data.timelineInfo;
-    $scope.user = info.data.timelineInfo.user;
-    $scope.tweets = info.data.timelineInfo.tweets;
+    // console.log("mytimeline tweets", info.data.info.following.name);
+    // console.log("mytimeline avatar", info.data.info.avatar_url);
 
 
-    console.log($scope.timeline_info);
+    //
+    //
+    // console.log($scope.timeline_info);
 
   }).then (function(data) {
-    console.log('success in timeline', data);
+    // console.log('success in timeline', data);
   })
   .catch(function(error) {
     console.log("There was an error!!!", error.stack);

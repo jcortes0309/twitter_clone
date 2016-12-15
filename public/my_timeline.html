@@ -1,4 +1,6 @@
 <h1>Hi from the my_timeline.html</h1>
-<p ng-repeat="tweet in tweets">{{tweet.text}}</p>
-<h4>{{user._id}}</h4>
-<img src="{{user.avatar_url}}" alt="">
+<br>
+<p ng-repeat="tweet in tweets">
+  <img src="{{ tweet.avatar_url }}" alt="" width="100px">
+  {{ tweet.userID }} -  {{ tweet.text }}
+</p>
