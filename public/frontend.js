@@ -16,10 +16,17 @@ app.factory("twitterFactory", function($http, $rootScope) {
     console.log("I'm inside the myTimeline factory");
     return $http ({
       method: "GET",
-      url: "/my_timeline",
+      url: "/my_timeline"
     });
   };
 
+  service.world = function() {
+    console.log("inside world factory service");
+    return $http ({
+      method: "GET",
+      url: "/world"
+    });
+  };
   return service;
 });
 
@@ -42,21 +49,20 @@ app.controller("MyTimelineController", function($scope, twitterFactory) {
   twitterFactory.myTimeline()
   .then(function(info) {
     console.log("mytimeline info", info);
-    // $scope.timeline_info = info.data.timelineInfo;
-    // $scope.user = info.data.timelineInfo.user;
     $scope.tweets = info.data.my_timeline_info.my_timeline_tweets;
     $scope.following = info.data.my_timeline_info.following_users;
+  })
+  .catch(function(error) {
+    console.log("There was an error!!!", error.stack);
+  });
+});
 
-    // console.log("mytimeline tweets", info.data.info.following.name);
-    // console.log("mytimeline avatar", info.data.info.avatar_url);
-
-
-    //
-    //
-    // console.log($scope.timeline_info);
-
-  }).then (function(data) {
-    // console.log('success in timeline', data);
+app.controller("WorldController", function($scope, twitterFactory) {
+  console.log("we're in the world controller");
+  twitterFactory.world()
+  .then(function(info) {
+    console.log("world info", info);
+    $scope.allTweets = info.data.world_timeline_info.world_tweets;
   })
   .catch(function(error) {
     console.log("There was an error!!!", error.stack);
@@ -76,6 +82,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
     url: "/profile",
     templateUrl: "profile.html",
     controller: "ProfileController"
+  })
+  .state({
+    name: "world",
+    url: "/world",
+    templateUrl: "world.html",
+    controller: "WorldController"
   });
 
   $urlRouterProvider.otherwise("/");

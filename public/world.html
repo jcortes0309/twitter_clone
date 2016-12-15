@@ -1,0 +1,7 @@
+<h1>Hi from the world.html</h1>
+<br>
+{{allTweets}}
+<p ng-repeat="tweet in allTweets">
+  <img src="{{ tweet.avatar_url }}" alt="" width="100px">
+  {{ tweet.userID }} -  {{ tweet.text }}
+</p>

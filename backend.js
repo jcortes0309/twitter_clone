@@ -262,37 +262,58 @@ app.get("/my_timeline", function(request, response) {
   // });
 });
 
-
-// bluebird.all([
-//   Tweet.find({ userID: 'Hulkster' }).limit(20),
-//   User.findById('Hulkster')
-// ])
-// .spread(function(tweets, user) {
-//   console.log('tweets information: ',tweets);
-//   console.log('\nuser information:', user);
-//   var allmystuff = tweets + user;
-// });
-// .then(function(successstuff) {
-//   console.log('\n\nsuccess stuff inside .then', successstuff);
-//   })
-// .catch(function(err) {
-//   console.log('errrrrr no hulkster', err.message);
-// });
-//
-//
-// // My timeline
-// User.findById(theUserId)
-//   .then(function(user) {
-//     return Tweet.find({
-//       userID: {
-//         $in: user.following.concat([user._id])
-//       }
-//     });
-//   })
-//   .then(function(tweets) {
-//     // you have the tweets
-//   });
-
+app.get("/world", function(request, response) {
+  console.log("I'm at the beginning of the /world backend");
+  // My timeline
+  Tweet.find()
+    .then(function(tweets) {
+      console.log("world", tweets);
+      // console.log("User info: ", user);
+      var allUsers = [];
+      tweets.forEach(function(tweet) {
+        // console.log("\n\nTweet inside tweets: \n", tweet);
+        allUsers.push(tweet.userID);
+      });
+      console.log('allusers', allUsers);
+      allUsers = _.uniqBy(allUsers);
+      console.log("\nI'm allUsers: ", allUsers);
+      console.log("\n\n");
+        return User.find({
+          _id: {
+            $in: allUsers
+          }
+        })
+        .then(function(users) {
+          console.log('success users from allUsers that tweet', users);
+          var indexed_users = {};
+            users.forEach(function(user) {
+              indexed_users[user._id] = user;
+              console.log("\n\nindexed_users information: \n\n", indexed_users);
+            });
+            tweets.forEach(function(tweet) {
+              console.log("\n\nHERE IS MY TWEET\n\n", tweet);
+              let user = indexed_users[tweet.userID];
+              // console.log(user);
+              tweet.name = user.name;
+              tweet.avatar_url = user.avatar_url;
+            });
+            var world_timeline_info = {
+              world_tweets: tweets
+            };
+            console.log("\n\nworld_timeline_info\n\n", world_timeline_info);
+            response.json({
+              world_timeline_info: world_timeline_info
+            });
+        })
+        .catch(function(error) {
+          response.status(400);
+          response.json({
+            message: "It didn't work!",
+          });
+          console.log("We got an error world! ", error.stack);
+        });
+    });
+});
 
 
 
