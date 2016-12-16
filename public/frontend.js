@@ -124,13 +124,6 @@ app.controller("SignupController", function($scope, twitterFactory, $state) {
     console.log("$scope.signup_data is ", $scope.signup_data);
     twitterFactory.signup($scope.signup_data);
     $state.go('login');
-    // .then(function() {
-    //   $state.go('login');
-    // })
-    // .catch(function(err) {
-    //   console.log('err because', err.stack);
-    // });
-
   };
 });
 app.controller("LoginController", function($scope, twitterFactory, $cookies, $state, $rootScope) {
