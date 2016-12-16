@@ -30,7 +30,7 @@
             <br> -->
             <!-- <li>I have a cookie when I log in: {{cookie_data}}</li> -->
             <li><a ng-show="userID" ng-cloak>Welcome {{userID}}</a></li>
-            <li><a ng-show="userID" ng-cloak ui-sref="profile">Profile</a></li>
+            <li><a ng-show="userID" ng-cloak ui-sref="profile({username: userID})">Profile</a></li>
             <!-- <li><a ui-sref="home">Home</a></li> -->
             <li><a ng-show="userID" ng-cloak ui-sref="world">World</a></li>
             <li><a ng-hide="userID" ng-cloak ui-sref="signup">Signup</a></li>

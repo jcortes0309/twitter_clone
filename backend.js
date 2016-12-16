@@ -111,12 +111,14 @@ var firstTweet = new Tweet( {
 
 //
 // // User Profile page
-app.get("/profile", function(request, response) {
+app.get("/profile/:userID", function(request, response) {
+  let userID = request.params.userID;
   console.log("I'm in the backend");
+  console.log("request params userID", userID);
 
   return bluebird.all([
-    Tweet.find({ userID: 'Hulkster' }).limit(20),
-    User.findById('Hulkster')
+    Tweet.find({ userID: userID }).limit(20),
+    User.findById(userID)
   ])
   .spread(function(tweets, user) {
     var profile_page = {
@@ -139,8 +141,6 @@ app.get("/profile", function(request, response) {
     });
     console.log("We got an error! ", error.stack);
   });
-
-
 });
 
 

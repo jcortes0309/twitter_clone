@@ -51,7 +51,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   service.profile = function() {
     return $http ({
       method: "GET",
-      url: "/profile"
+      url: "/profile/" + $rootScope.userID
     });
   };
 
@@ -224,7 +224,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
   })
   .state({
     name: "profile",
-    url: "/profile",
+    url: "/profile/{username}",
     templateUrl: "profile.html",
     controller: "ProfileController"
   })
