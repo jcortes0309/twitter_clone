@@ -68,7 +68,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
     // console.log("I'm inside the myTimeline factory");
     return $http ({
       method: "GET",
-      url: "/my_timeline"
+      url: "/my_timeline/" + $rootScope.userID
     });
   };
 
@@ -116,7 +116,7 @@ app.controller("ProfileController", function($scope, twitterFactory) {
     });
 });
 
-app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope) {
+app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope, $state) {
   console.log("we're in the timeline controller");
   twitterFactory.myTimeline()
     .then(function(info) {
@@ -133,14 +133,16 @@ app.controller("MyTimelineController", function($scope, twitterFactory, $rootSco
       userID: $rootScope.userID,
       post: $scope.post
     };
-    console.log("tweetInfoSendFactory ", tweetInfoSendFactory);
-    twitterFactory.tweet(tweetInfoSendFactory);
-    // .then(function() {
-    //    $scope.post = "";
-    // })
-    // .catch(function(error) {
-    //   console.log("There was an error!!!", error.stack);
-    // });
+    twitterFactory.tweet(tweetInfoSendFactory)
+    .then(function(response) {
+      console.log("tweetInfoSendFactory ", response.data);
+      console.log('arrived from TWEET!');
+       $scope.post = "";
+       $state.reload();
+    })
+    .catch(function(error) {
+      console.log("There was an error!!!", error.stack);
+    });
   };
 
 });
@@ -218,7 +220,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
   .state({
     name: "home",
-    url: "/",
+    url: "/{username}",
     templateUrl: "my_timeline.html",
     controller: "MyTimelineController"
   })

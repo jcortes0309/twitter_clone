@@ -145,10 +145,14 @@ app.get("/profile/:userID", function(request, response) {
 
 
 
-app.get("/my_timeline", function(request, response) {
+app.get("/my_timeline/:userID", function(request, response) {
   // My timeline
+  let userID = request.params.userID;
+  console.log("I'm in the my_timeline/:userID");
+  console.log("request params userID", userID);
+
   // Finds a specific user and returns a promise
-  User.findById("Hulkster")
+  User.findById(userID)
     .then(function(user) {
       // console.log("\nUser's info\n", user);
       // Looks at all the tweets and will return the tweets for everyone the user is following, including his/her tweets
@@ -181,6 +185,7 @@ app.get("/my_timeline", function(request, response) {
       .then(function(following_users) {
         // Creates an indexed object
         var indexed_following_users = {};
+        console.log('REached the bunny!!!');
         // Loops through every user that was previously returned (inside following_users) and creates a new object with the key value equal to the information found in user._id (the user's id inside mongodb)
         following_users.forEach(function(user) {
           indexed_following_users[user._id] = user;
@@ -200,6 +205,7 @@ app.get("/my_timeline", function(request, response) {
           my_timeline_tweets: tweets
         };
         // console.log("\n\nmy_timeline_info\n\n", my_timeline_info);
+        console.log('begining admission for timeline');
         response.json({
           my_timeline_info: my_timeline_info
         });
@@ -282,6 +288,9 @@ app.post("/my_timeline", function(request, response) {
    newTweetPost.save()
      .then(function(blah) {
        console.log('tweet tweet success', blah);
+       response.json({
+         tweet: blah
+       });
      })
      .catch(function(err) {
        console.log('tweet tweet fail', err.stack);
