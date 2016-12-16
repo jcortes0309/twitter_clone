@@ -272,7 +272,7 @@ app.get("/world", function(request, response) {
         });
     });
 });
-app.post("/profile/:userID", function(request, response) {
+app.post("/profile", function(request, response) {
   console.log("This is the request: ", request.body);
   var followingID = request.body['followingID'];
   var userID = request.body['user_ID'];

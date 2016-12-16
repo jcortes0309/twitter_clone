@@ -58,7 +58,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   service.followUser = function(userID) {
     return $http ({
       method: "POST",
-      url: "/profile/" + userID,
+      url: "/profile",
       data: {
         followingID: userID,
         user_ID: $rootScope.userID
@@ -135,7 +135,16 @@ app.controller("ProfileController", function($scope, twitterFactory, $stateParam
 });
 
 app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope, $state, $stateParams) {
-  var userID = $stateParams.username;
+  var userID;
+  console.log("Here are parameters.  Don't cross them!", $stateParams);
+  // Need to have this if statement in place because our home url state is defined as /home/{username}.  Without a username, we won't be able to see anything in the home page.
+  if ($stateParams) {
+    userID = $rootScope.userID;
+  } else {
+    userID = $stateParams.username;
+  }
+  console.log("This is the userID", userID);
+
   console.log("we're in the timeline controller");
   twitterFactory.myTimeline(userID)
     .then(function(info) {
@@ -163,7 +172,6 @@ app.controller("MyTimelineController", function($scope, twitterFactory, $rootSco
       console.log("There was an error!!!", error.stack);
     });
   };
-
 });
 
 app.controller("WorldController", function($scope, twitterFactory) {
