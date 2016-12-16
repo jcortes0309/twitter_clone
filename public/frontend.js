@@ -2,28 +2,49 @@
 
 var app = angular.module("twitter_clone", ["ui.router", "ngCookies"]);
 
+// app.run(function($rootScope, $cookies) {
+//   console.log("I like to run\n\n\n\n");
+  // cookie data gets passed into the factory
+  // $rootScope.factory_cookie_data = $cookies.getObject('cookieData');
+  // console.log("I have a cookie.  Do you want to see it? ", $rootScope.factory_cookie_data);
+  // $rootScope.userID = $rootScope.factory_cookie_data.user_id;
+// });
+
 app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   var service = {};
-  $rootScope.authToken = null;
-  console.log("Printing initial cookie", $rootScope.authToken);
-  // cookie data gets passed into the factory
-  $rootScope.authToken = $cookies.getObject('cookieData');
-  console.log("Printing initial cookie", $rootScope.authToken);
+  // $rootScope.factory_cookie_data = null;
+  // console.log("Printing initial cookie", $rootScope.factory_cookie_data);
+  // $rootScope.factory_cookie_data = $cookies.getObject('cookieData');
 
-  console.log("I am inside the factory!");
-  if ($rootScope.authToken) {
+  console.log("Printing initial cookie", $rootScope.factory_cookie_data);
+
+  $rootScope.factory_cookie_data = $cookies.getObject('cookieData');
+  console.log("I have a cookie.  Do you want to see it? ", $rootScope.factory_cookie_data);
+
+  // console.log("I am inside the factory!");
+  if ($rootScope.factory_cookie_data) {
     console.log("I am a cookie data in the factory!");
     // grab auth_token from the cookieData
-    $rootScope.authToken = $rootScope.authToken;
+    $rootScope.authToken = $rootScope.factory_cookie_data.auth_token;
+    // // grab user information from cookieData
+    $rootScope.userID = $rootScope.factory_cookie_data.user_id;
   }
+
+
+  // store user information in a $rootScope variable
+  // $rootScope.userID = user_info.user_id;
+  // store token information in a $rootScope variable
+  // $rootScope.authToken = user_info.auth_token;
 
   $rootScope.logout = function() {
     console.log("Entered the logout function");
     // remove method => pass in the value of the cookie data you want to remove
     $cookies.remove('cookieData');
     // reset all the scope variables
+    $rootScope.factory_cookie_data = null;
     $rootScope.authToken = null;
-    console.log("Here is the $rootScope.authToken: ", $rootScope.authToken);
+    $rootScope.userID = null;
+    // console.log("Here is the $rootScope.authToken: ", $rootScope.authToken);
     $state.go("world");
   };
 
@@ -31,6 +52,15 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
     return $http ({
       method: "GET",
       url: "/profile"
+    });
+  };
+
+  service.tweet = function(tweetInfo) {
+    console.log("I'm tweeting from the factory!!!", tweetInfo);
+    return $http ({
+      method: "POST",
+      url: "/my_timeline",
+      data: tweetInfo
     });
   };
 
@@ -97,6 +127,16 @@ app.controller("MyTimelineController", function($scope, twitterFactory) {
   .catch(function(error) {
     console.log("There was an error!!!", error.stack);
   });
+  $scope.postTweet = function() {
+    console.log("I'm posting this tweet: ", $scope.post);
+    twitterFactory.tweet($scope.post)
+    // .then(function() {
+    //    $scope.post = "";
+    // })
+    // .catch(function(error) {
+    //   console.log("There was an error!!!", error.stack);
+    // });
+  };
 });
 
 app.controller("WorldController", function($scope, twitterFactory) {
@@ -138,13 +178,26 @@ app.controller("LoginController", function($scope, twitterFactory, $cookies, $st
     console.log("$scope.login_data is ", $scope.login_data);
     twitterFactory.login($scope.login_data)
       .then(function(response) {
-        console.log("This response is coming from the backend: ", response.data.auth_token);
+        // console.log("This response is coming from the backend: ", response.data);
         console.log("This is the response info: ", response);
         var auth_token = response.data.auth_token;
+        var user_id = response.data.user_id;
+        var user_info = {
+          auth_token: auth_token,
+          user_id: user_id
+        };
+        console.log("\n\n\nI'm a cute token: ", auth_token);
+        console.log("But I own the token...", user_id);
 
         console.log("I put the dough in the cookie....");
-        $cookies.putObject('cookieData', auth_token);
-        $rootScope.authToken = auth_token;
+        $cookies.putObject('cookieData', user_info);
+        // store user information in a $rootScope variable
+        // Need this information as the factory will not store the cookie until a reload happens
+        $rootScope.cookie_data = user_info;
+        // store user id in a $rootScope variable
+        $rootScope.userID = user_info.user_id;
+        // store token information in a $rootScope variable
+        $rootScope.authToken = user_info.auth_token;
         console.log("Here is my $rootScope.authToken", $rootScope.authToken);
         $state.go("home");
 

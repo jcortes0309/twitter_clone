@@ -43,8 +43,74 @@ var firstTweet = new Tweet( {
   userID: "Tom"
 });
 
+// var secondTweet = new Tweet( {
+//   text: "this is the second ever tweet in history",
+//   date: new Date(),
+//   userID: "IAmAnything"
+// });
+// var hulkTweet2 = new Tweet( {
+//   text: "this is the hulksters second tweet",
+//   date: new Date(),
+//   userID: "Hulkster"
+// });
+// hulkTweet2.save()
+//   .then(function(blah) {
+//     console.log('hulk tweet success', blah);
+//   })
+//   .catch(function(err) {
+//     console.log('hulkster fail', err.stack);
+//   });
 
-// User Profile page
+// secondTweet.save()
+//   .then(function(blah) {
+//     console.log('second tweet success', blah);
+//   })
+//   .catch(function(err) {
+//     console.log('fail2', err.stack);
+//   });
+// var tomCruise = new User({
+//   _id: "Tom",
+//   name: "Tom Cruise"
+// });
+//
+// var thirdUser = new User({
+//   _id: "HulkHogan",
+//   name: "Hulkster"
+// });
+// //
+// thirdUser.save()
+//   .then(function(result) {
+//     console.log("Save success3", result);
+//   })
+//   .catch(function(error) {
+//     console.log("Didn't save3 because: ", error.stack);
+//     // console.log("Detailed information : ", error.errors);
+//   });
+//
+// anything.save()
+//   .then(function(result) {
+//     console.log("Save success", result);
+//   })
+//   .catch(function(error) {
+//     console.log("Didn't save because: ", error.stack);
+//     console.log("Didn't save because: ", error.message);
+//     // console.log("Detailed information : ", error.errors);
+//   });
+//
+// console.log("Something happened again");
+// console.log("print anything", anything);
+
+// World Timeline
+// Tweet.find().limit(20)
+//   .then(function(stuff) {
+//     console.log('did a find thing', stuff);
+//   })
+//   .catch(function(err) {
+//     console.log('bigtime fail', err.stack);
+//   });
+
+//
+// // User Profile page
 app.get("/profile", function(request, response) {
   console.log("I'm in the backend");
 
@@ -58,10 +124,13 @@ app.get("/profile", function(request, response) {
       user: user
     };
     console.log('profile info is: ', profile_page);
+    // console.log("This is the response: ", response);
 
     response.json({
       profile_page: profile_page
     });
+    // console.log('tweets information: ',tweets);
+    // console.log('\nuser information:', user);
   })
   .catch(function(error) {
     response.status(400);
@@ -74,6 +143,9 @@ app.get("/profile", function(request, response) {
 
 });
 
+app.post("/my_timeline", function(request, response) {
+  console.log("This is the request: ", request.body);
+});
 
 app.get("/my_timeline", function(request, response) {
   // My timeline
@@ -236,6 +308,7 @@ app.post('/login', function(request, response) {
 
   User.findById(username)
     .then(function(user) {
+      var user_id = user._id;
       console.log("User returned from the database: ", user);
       let hash = user.password;
       console.log("This is the password/hash", hash);
@@ -248,6 +321,7 @@ app.post('/login', function(request, response) {
             console.log("This is my special token.  Don't touch: ", auth_token);
             return bluebird.all([
               auth_token,
+              user_id,
               User.update(
                 { _id: username },
                 {
@@ -263,10 +337,13 @@ app.post('/login', function(request, response) {
         })
         .then(function(stuff) {
           let auth_token = stuff[0];
+          let user_id = stuff[1];
+          console.log("This is my stuff: ", stuff);
           console.log("success @!!@");
           console.log("Here is the user's token!", auth_token);
           response.json({
-            auth_token: auth_token
+            auth_token: auth_token,
+            user_id: user_id
           });
         })
         .catch(function(error) {

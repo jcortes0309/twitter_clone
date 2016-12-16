@@ -1,6 +1,7 @@
 <h1>Hi from the my_timeline.html</h1>
+<input type="text" ng-model="post" ng-keyup="$event.keyCode == 13 && postTweet()" name="" value="" placeholder="What are you doing?">
 <br>
 <p ng-repeat="tweet in tweets">
-  <img src="{{ tweet.avatar_url }}" alt="" width="100px">
+  <img ng-src="{{ tweet.avatar_url }}" alt="" width="100px">
   {{ tweet.userID }} -  {{ tweet.text }}
 </p>
