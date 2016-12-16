@@ -16,14 +16,14 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   // console.log("Printing initial cookie", $rootScope.factory_cookie_data);
   // $rootScope.factory_cookie_data = $cookies.getObject('cookieData');
 
-  console.log("Printing initial cookie", $rootScope.factory_cookie_data);
+  // console.log("Printing initial cookie", $rootScope.factory_cookie_data);
 
   $rootScope.factory_cookie_data = $cookies.getObject('cookieData');
-  console.log("I have a cookie.  Do you want to see it? ", $rootScope.factory_cookie_data);
+  // console.log("I have a cookie.  Do you want to see it? ", $rootScope.factory_cookie_data);
 
   // console.log("I am inside the factory!");
   if ($rootScope.factory_cookie_data) {
-    console.log("I am a cookie data in the factory!");
+    // console.log("I am a cookie data in the factory!");
     // grab auth_token from the cookieData
     $rootScope.authToken = $rootScope.factory_cookie_data.auth_token;
     // // grab user information from cookieData
@@ -37,7 +37,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   // $rootScope.authToken = user_info.auth_token;
 
   $rootScope.logout = function() {
-    console.log("Entered the logout function");
+    // console.log("Entered the logout function");
     // remove method => pass in the value of the cookie data you want to remove
     $cookies.remove('cookieData');
     // reset all the scope variables
@@ -65,7 +65,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   };
 
   service.myTimeline = function() {
-    console.log("I'm inside the myTimeline factory");
+    // console.log("I'm inside the myTimeline factory");
     return $http ({
       method: "GET",
       url: "/my_timeline"
@@ -73,7 +73,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   };
 
   service.world = function() {
-    console.log("inside world factory service");
+    // console.log("inside world factory service");
     return $http ({
       method: "GET",
       url: "/world"
@@ -81,7 +81,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   };
 
   service.signup = function(data) {
-    console.log("in signup service", data);
+    // console.log("in signup service", data);
     return $http ({
       method: 'POST',
       url: "/signup",
@@ -89,7 +89,7 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
     });
   };
   service.login = function(data) {
-    console.log("in login service", data);
+    // console.log("in login service", data);
     return $http ({
       method: 'POST',
       url: "/login",
@@ -104,10 +104,10 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
 
 
 app.controller("ProfileController", function($scope, twitterFactory) {
-  console.log("I got into the controller.  Yay!!!");
+  // console.log("I got into the controller.  Yay!!!");
   twitterFactory.profile()
     .then(function(info) {
-      console.log("Profile info received in the ProfileController", info);
+      // console.log("Profile info received in the ProfileController", info);
       $scope.profile = info.data.profile_page.user;
       $scope.tweets = info.data.profile_page.tweets;
     })
@@ -116,20 +116,25 @@ app.controller("ProfileController", function($scope, twitterFactory) {
     });
 });
 
-app.controller("MyTimelineController", function($scope, twitterFactory) {
+app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope) {
   console.log("we're in the timeline controller");
   twitterFactory.myTimeline()
-  .then(function(info) {
-    console.log("mytimeline info", info);
-    $scope.tweets = info.data.my_timeline_info.my_timeline_tweets;
-    $scope.following = info.data.my_timeline_info.following_users;
-  })
-  .catch(function(error) {
-    console.log("There was an error!!!", error.stack);
-  });
-  $scope.postTweet = function() {
-    console.log("I'm posting this tweet: ", $scope.post);
-    twitterFactory.tweet($scope.post)
+    .then(function(info) {
+      // console.log("mytimeline info", info);
+      $scope.tweets = info.data.my_timeline_info.my_timeline_tweets;
+      $scope.following = info.data.my_timeline_info.following_users;
+    })
+    .catch(function(error) {
+      console.log("There was an error!!!", error.stack);
+    });
+    $scope.postTweet = function() {
+    var tweetInfoSendFactory = {
+      token: $rootScope.authToken,
+      userID: $rootScope.userID,
+      post: $scope.post
+    };
+    console.log("tweetInfoSendFactory ", tweetInfoSendFactory);
+    twitterFactory.tweet(tweetInfoSendFactory);
     // .then(function() {
     //    $scope.post = "";
     // })
@@ -137,13 +142,14 @@ app.controller("MyTimelineController", function($scope, twitterFactory) {
     //   console.log("There was an error!!!", error.stack);
     // });
   };
+
 });
 
 app.controller("WorldController", function($scope, twitterFactory) {
   console.log("we're in the world controller");
   twitterFactory.world()
   .then(function(info) {
-    console.log("world info", info);
+    // console.log("world info", info);
     $scope.allTweets = info.data.world_timeline_info.world_tweets;
   })
   .catch(function(error) {
@@ -152,44 +158,44 @@ app.controller("WorldController", function($scope, twitterFactory) {
 });
 
 app.controller("SignupController", function($scope, twitterFactory, $state) {
-  console.log("in signup");
+  // console.log("in signup");
 
   $scope.signup = function() {
-    console.log('in signupfunction');
+    // console.log('in signupfunction');
     $scope.signup_data = {
       name: $scope.name,
       username: $scope.username,
       password: $scope.password
     };
-    console.log("$scope.signup_data is ", $scope.signup_data);
+    // console.log("$scope.signup_data is ", $scope.signup_data);
     twitterFactory.signup($scope.signup_data);
     $state.go('login');
   };
 });
 app.controller("LoginController", function($scope, twitterFactory, $cookies, $state, $rootScope) {
-  console.log("in login");
+  // console.log("in login");
 
   $scope.login = function() {
-    console.log('in login function');
+    // console.log('in login function');
     $scope.login_data = {
       username: $scope.username,
       password: $scope.password
     };
-    console.log("$scope.login_data is ", $scope.login_data);
+    // console.log("$scope.login_data is ", $scope.login_data);
     twitterFactory.login($scope.login_data)
       .then(function(response) {
         // console.log("This response is coming from the backend: ", response.data);
-        console.log("This is the response info: ", response);
+        // console.log("This is the response info: ", response);
         var auth_token = response.data.auth_token;
         var user_id = response.data.user_id;
         var user_info = {
           auth_token: auth_token,
           user_id: user_id
         };
-        console.log("\n\n\nI'm a cute token: ", auth_token);
-        console.log("But I own the token...", user_id);
+        // console.log("\n\n\nI'm a cute token: ", auth_token);
+        // console.log("But I own the token...", user_id);
 
-        console.log("I put the dough in the cookie....");
+        // console.log("I put the dough in the cookie....");
         $cookies.putObject('cookieData', user_info);
         // store user information in a $rootScope variable
         // Need this information as the factory will not store the cookie until a reload happens
@@ -198,7 +204,7 @@ app.controller("LoginController", function($scope, twitterFactory, $cookies, $st
         $rootScope.userID = user_info.user_id;
         // store token information in a $rootScope variable
         $rootScope.authToken = user_info.auth_token;
-        console.log("Here is my $rootScope.authToken", $rootScope.authToken);
+        // console.log("Here is my $rootScope.authToken", $rootScope.authToken);
         $state.go("home");
 
       })

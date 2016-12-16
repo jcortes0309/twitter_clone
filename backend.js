@@ -143,9 +143,7 @@ app.get("/profile", function(request, response) {
 
 });
 
-app.post("/my_timeline", function(request, response) {
-  console.log("This is the request: ", request.body);
-});
+
 
 app.get("/my_timeline", function(request, response) {
   // My timeline
@@ -267,6 +265,28 @@ app.get("/world", function(request, response) {
           console.log("We got an error world! ", error.stack);
         });
     });
+});
+
+app.post("/my_timeline", function(request, response) {
+  console.log("This is the request: ", request.body);
+  var username = request.body['userID'];
+  var token = request.body['token'];
+  var post = request.body['post'];
+
+  var newTweetPost = new Tweet( {
+   text: post,
+   date: new Date(),
+   userID: username
+ });
+ if (token) {
+   newTweetPost.save()
+     .then(function(blah) {
+       console.log('tweet tweet success', blah);
+     })
+     .catch(function(err) {
+       console.log('tweet tweet fail', err.stack);
+     });
+   }
 });
 
 app.post('/signup', function(request, response) {
