@@ -185,7 +185,6 @@ app.get("/my_timeline/:userID", function(request, response) {
       .then(function(following_users) {
         // Creates an indexed object
         var indexed_following_users = {};
-        console.log('REached the bunny!!!');
         // Loops through every user that was previously returned (inside following_users) and creates a new object with the key value equal to the information found in user._id (the user's id inside mongodb)
         following_users.forEach(function(user) {
           indexed_following_users[user._id] = user;
@@ -284,9 +283,6 @@ app.post("/profile", function(request, response) {
       $addToSet: {
         following: followingID
       }
-    },
-    {
-      upsert: true
     }
   ).then(function() {
     console.log('success following')
@@ -294,59 +290,104 @@ app.post("/profile", function(request, response) {
 
 });
 
-app.post("/my_timeline/:userID", function(request, response) {
-  console.log("This is the request: ", request.body);
-  var username = request.body['userID'];
-  var token = request.body['token'];
-  var post = request.body['post'];
+app.post("/my_timeline", function(request, response) {
+  console.log(request.body);
+  var tweet_retweet = request.body.tweet_retweet;
+  console.log("I'm goint to do something: ", tweet_retweet);
 
-  var newTweetPost = new Tweet( {
-   text: post,
-   date: new Date(),
-   userID: username
- });
- if (token) {
-   newTweetPost.save()
-     .then(function(blah) {
-       console.log('tweet tweet success', blah);
-       response.json({
-         tweet: blah
-       });
-     })
-     .catch(function(err) {
-       console.log('tweet tweet fail', err.stack);
-     });
-   }
-});
+  if (tweet_retweet === "retweet") {
+    console.log("I'm trying to retweet!!!");
+    console.log("This is the request for the retweet: ", request.body);
+    var userID = request.body.user_ID;
+    var retweetingID = request.body.retweetingID;
+    var tweet_text = request.body.tweet;
+    var retweet_from = userID + " retweeted from " + retweetingID + ": ";
+    var post = retweet_from + tweet_text;
+    var token = request.body.token;
+    console.log(userID);
+    console.log(retweetingID);
+    console.log(tweet_text);
+    console.log(post);
+    console.log("token", token);
 
-app.post('/signup', function(request, response) {
-  console.log("This is the request: ", request.body);
-  var name = request.body['name'];
-  var username = request.body['username'];
-  var password = request.body['password'];
-
-  bcrypt.hash(password, saltRounds)
-    .then(function(hash) {
-      console.log("This is the hash: ", hash);
-      var newSignup = new User({
-        name: name,
-        _id: username,
-        password: hash
+    if (token) {
+      var newTweetPost = new Tweet( {
+        text: post,
+        date: new Date(),
+        userID: userID
       });
 
-      console.log("This is the newSignup info: ", newSignup);
-
-      newSignup.save()
-        .then(function(result) {
-          console.log("Save success", result);
-        })
-        .catch(function(error) {
-          console.log("Didn't save because: ", error.stack);
+      newTweetPost.save()
+        .then(function(tweet_posted) {
+           console.log('tweet tweet success', tweet_posted);
+           response.json({
+             tweet: tweet_posted
+           });
+         })
+        .catch(function(err) {
+         console.log('tweet tweet fail', err.stack);
         });
-    })
-    .catch(function(error) {
-      console.log("Didn't save because: ", error.stack);
-     });
+    }
+  }
+
+  if (tweet_retweet === "tweet") {
+    console.log("This is the request: ", request.body);
+    var username = request.body.tweetInfo['userID'];
+    var token = request.body.tweetInfo['token'];
+    var post = request.body.tweetInfo['post'];
+    console.log("username", username);
+    console.log("token", token);
+    console.log("post", post);
+
+    if (token) {
+      var newTweetPost = new Tweet( {
+        text: post,
+        date: new Date(),
+        userID: username
+      });
+
+      newTweetPost.save()
+        .then(function(blah) {
+           console.log('tweet tweet success', blah);
+           response.json({
+             tweet: blah
+           });
+         })
+        .catch(function(err) {
+         console.log('tweet tweet fail', err.stack);
+        });
+    }
+  }
+});
+
+  app.post('/signup', function(request, response) {
+    console.log("This is the request: ", request.body);
+    var name = request.body['name'];
+    var username = request.body['username'];
+    var password = request.body['password'];
+
+    bcrypt.hash(password, saltRounds)
+      .then(function(hash) {
+        console.log("This is the hash: ", hash);
+        var newSignup = new User({
+          name: name,
+          _id: username,
+          password: hash
+        });
+
+        console.log("This is the newSignup info: ", newSignup);
+
+        newSignup.save()
+          .then(function(result) {
+            console.log("Save success", result);
+          })
+          .catch(function(error) {
+            console.log("Didn't save because: ", error.stack);
+          });
+      })
+      .catch(function(error) {
+        console.log("Didn't save because: ", error.stack);
+       });
 });
 
 app.post('/login', function(request, response) {

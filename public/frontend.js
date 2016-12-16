@@ -67,11 +67,30 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
   };
 
   service.tweet = function(tweetInfo) {
+    var tweet = "tweet";
     console.log("I'm tweeting from the factory!!!", tweetInfo);
     return $http ({
       method: "POST",
       url: "/my_timeline",
-      data: tweetInfo
+      data: {
+        tweet_retweet: tweet,
+        tweetInfo: tweetInfo
+      }
+    });
+  };
+
+  service.retweeting = function(userID, tweet_text) {
+    var retweet = "retweet";
+    return $http ({
+      method: "POST",
+      url: "/my_timeline",
+      data: {
+        tweet_retweet: retweet,
+        retweetingID: userID,
+        tweet: tweet_text,
+        user_ID: $rootScope.userID,
+        token: $rootScope.authToken
+      }
     });
   };
 
@@ -155,7 +174,8 @@ app.controller("MyTimelineController", function($scope, twitterFactory, $rootSco
     .catch(function(error) {
       console.log("There was an error!!!", error.stack);
     });
-    $scope.postTweet = function() {
+
+  $scope.postTweet = function() {
     var tweetInfoSendFactory = {
       token: $rootScope.authToken,
       userID: $rootScope.userID,
@@ -167,6 +187,18 @@ app.controller("MyTimelineController", function($scope, twitterFactory, $rootSco
       console.log('arrived from TWEET!');
        $scope.post = "";
        $state.reload();
+    })
+    .catch(function(error) {
+      console.log("There was an error!!!", error.stack);
+    });
+  };
+
+  $scope.retweet = function(user, tweet_text) {
+    console.log("I'm retweeting this sh!7", user);
+    console.log("I'm retweeting this sh!7", tweet_text);
+    twitterFactory.retweeting(user, tweet_text)
+    .then(function(response) {
+      $state.reload();
     })
     .catch(function(error) {
       console.log("There was an error!!!", error.stack);
