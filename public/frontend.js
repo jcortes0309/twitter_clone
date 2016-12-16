@@ -48,10 +48,10 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
     $state.go("world");
   };
 
-  service.profile = function() {
+  service.profile = function(userID) {
     return $http ({
       method: "GET",
-      url: "/profile/" + $rootScope.userID
+      url: "/profile/" + userID
     });
   };
 
@@ -64,11 +64,11 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
     });
   };
 
-  service.myTimeline = function() {
+  service.myTimeline = function(userID) {
     // console.log("I'm inside the myTimeline factory");
     return $http ({
       method: "GET",
-      url: "/my_timeline/" + $rootScope.userID
+      url: "/my_timeline/" + userID
     });
   };
 
@@ -103,9 +103,11 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
 });
 
 
-app.controller("ProfileController", function($scope, twitterFactory) {
+app.controller("ProfileController", function($scope, twitterFactory, $stateParams) {
   // console.log("I got into the controller.  Yay!!!");
-  twitterFactory.profile()
+  var userID = $stateParams.username;
+  console.log("This is the userID inside the ProfileController", userID);
+  twitterFactory.profile(userID)
     .then(function(info) {
       // console.log("Profile info received in the ProfileController", info);
       $scope.profile = info.data.profile_page.user;
@@ -116,9 +118,10 @@ app.controller("ProfileController", function($scope, twitterFactory) {
     });
 });
 
-app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope, $state) {
+app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope, $state, $stateParams) {
+  var userID = $stateParams.username;
   console.log("we're in the timeline controller");
-  twitterFactory.myTimeline()
+  twitterFactory.myTimeline(userID)
     .then(function(info) {
       // console.log("mytimeline info", info);
       $scope.tweets = info.data.my_timeline_info.my_timeline_tweets;
@@ -220,7 +223,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
   .state({
     name: "home",
-    url: "/{username}",
+    url: "/home/{username}",
     templateUrl: "my_timeline.html",
     controller: "MyTimelineController"
   })
@@ -249,5 +252,5 @@ app.config(function($stateProvider, $urlRouterProvider) {
     controller: "LoginController"
   });
 
-  $urlRouterProvider.otherwise("/");
+  $urlRouterProvider.otherwise("/home/{username}");
 });

@@ -4,5 +4,5 @@
 <img ng-src="{{ profile.avatar_url }}" alt="">
 <hr>
 <div class="">
-  <p ng-repeat="tweet in tweets">{{ tweet.text }}</p>
+  <p ng-repeat="tweet in tweets | orderBy:'-date'">{{ tweet.text }}</p>
 </div>

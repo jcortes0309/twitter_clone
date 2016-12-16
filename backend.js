@@ -273,7 +273,7 @@ app.get("/world", function(request, response) {
     });
 });
 
-app.post("/my_timeline", function(request, response) {
+app.post("/my_timeline/:userID", function(request, response) {
   console.log("This is the request: ", request.body);
   var username = request.body['userID'];
   var token = request.body['token'];
