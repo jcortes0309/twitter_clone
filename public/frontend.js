@@ -55,6 +55,17 @@ app.factory("twitterFactory", function($http, $rootScope, $cookies, $state) {
     });
   };
 
+  service.followUser = function(userID) {
+    return $http ({
+      method: "POST",
+      url: "/profile/" + userID,
+      data: {
+        followingID: userID,
+        user_ID: $rootScope.userID
+      }
+    });
+  };
+
   service.tweet = function(tweetInfo) {
     console.log("I'm tweeting from the factory!!!", tweetInfo);
     return $http ({
@@ -116,6 +127,11 @@ app.controller("ProfileController", function($scope, twitterFactory, $stateParam
     .catch(function(error) {
       console.log("There was an error!!!", error.stack);
     });
+  $scope.follow = function() {
+    var userID = $stateParams.username;
+    console.log("in scope follow click func", userID);
+    twitterFactory.followUser(userID);
+  };
 });
 
 app.controller("MyTimelineController", function($scope, twitterFactory, $rootScope, $state, $stateParams) {

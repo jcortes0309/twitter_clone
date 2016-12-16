@@ -272,6 +272,27 @@ app.get("/world", function(request, response) {
         });
     });
 });
+app.post("/profile/:userID", function(request, response) {
+  console.log("This is the request: ", request.body);
+  var followingID = request.body['followingID'];
+  var userID = request.body['user_ID'];
+  console.log("This is the request followingID: ", followingID);
+  console.log("This is the request userID: ", userID);
+  User.update(
+    { _id: userID },
+    {
+      $addToSet: {
+        following: followingID
+      }
+    },
+    {
+      upsert: true
+    }
+  ).then(function() {
+    console.log('success following')
+  })
+
+});
 
 app.post("/my_timeline/:userID", function(request, response) {
   console.log("This is the request: ", request.body);
